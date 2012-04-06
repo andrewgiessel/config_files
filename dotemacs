@@ -1,0 +1,169 @@
+;; By default we starting in text mode.
+(setq initial-major-mode
+      (lambda ()
+        (text-mode)
+        (font-lock-mode)
+        ))
+
+(setq inhibit-startup-message t)
+
+(setq transient-mark-mode t)
+
+(setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
+
+;;(add-hook 'before-save-hook (lambda () (delete-trailing-whitespace)))
+
+(add-to-list 'load-path
+             "~/.emacs.d/plugins")
+(add-to-list 'load-path
+             "~/.emacs.d/plugins/color-theme-6.6.0")
+
+(when window-system 
+   (require 'color-theme)
+   (eval-after-load "color-theme"
+     '(progn
+	(color-theme-initialize)
+	(load-file "~/.emacs.d/plugins/color-theme-almost-monokai.el")
+	(color-theme-almost-monokai)
+	)
+     )
+   
+   (tool-bar-mode 0)
+   (scroll-bar-mode -1)
+   (linum-mode 1)
+
+   )
+
+;; By default turn on colorization.
+(if (fboundp 'global-font-lock-mode)
+    (global-font-lock-mode t)
+  )
+
+;; kill alot of annoying things
+(blink-cursor-mode 1)
+(menu-bar-mode 0)
+(column-number-mode 1)
+
+;; change scroll behavior to "progressive" instead of "jerky"
+(setq-default scroll-up-aggressively 0.0 scroll-down-aggressively 0.0)
+(setq scroll-step 1 scroll-conservatively 100000)
+
+;; enable numbered(if window-system backups & move them all ~/.emacsbackup
+(setq version-control t)
+(setq backup-directory-alist (list (cons ".*" (expand-file-name "~/.emacsbackup/"))))
+
+(global-set-key "\C-xf" 'fill-paragraph)
+
+;; ;; (add-to-list 'load-path
+;; ;; 	     "~/.emacs.d/plugins/yasnippet-0.6.1c")
+;; ;;     (require 'yasnippet) ;; not yasnippet-bundle
+;; ;;     (yas/initialize)
+;; ;;     (yas/load-directory "~/.emacs.d/plugins/yasnippet-0.6.1c/snippets")
+
+;; ;; pymacs
+;; ;; (autoload 'pymacs-apply "pymacs")
+;; ;; (autoload 'pymacs-call "pymacs")
+;; ;; (autoload 'pymacs-eval "pymacs" nil t)
+;; ;; (autoload 'pymacs-exec "pymacs" nil t)
+;; ;; (autoload 'pymacs-load "pymacs" nil t)
+
+;; ;; ;;(eval-after-load "pymacs"
+;; ;; ;;  '(add-to-list 'pymacs-load-path YOUR-PYMACS-DIRECTORY"))
+
+;; ;; ;; rope (requires pymacs)
+;; ;; ;;(pymacs-load "ropemacs" "rope-")
+;; ;; ;;(pymacs-load "ropemacs")
+
+;; ;; (custom-set-variables
+;; ;;   ;; custom-set-variables was added by Custom -- don't edit or cut/paste it!
+;; ;;   ;; Your init file should contain only one such instance.
+;; ;;  '(ecb-options-version "2.32"))
+;; ;; (custom-set-faces
+;; ;;   ;; custom-set-faces was added by Custom -- don't edit or cut/paste it!
+;; ;;   ;; Your init file should contain only one such instance.
+;; ;;  )
+
+(require 'ido)
+(ido-mode)
+
+;; (require 'org-install)
+;; (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
+;; (define-key global-map "\C-cl" 'org-store-link)
+;; (define-key global-map "\C-ca" 'org-agenda)
+;; (setq org-log-done t)
+
+
+(global-set-key
+ "\M-x"
+ (lambda ()
+   (interactive)
+   (call-interactively
+    (intern
+     (ido-completing-read
+      "M-x "
+      (all-completions "" obarray 'commandp))))))
+
+
+(when (load "flymake" t)
+  (defun flymake-pyflakes-init ()
+    (let* ((temp-file (flymake-init-create-temp-buffer-copy
+		       'flymake-create-temp-inplace))
+	   (local-file (file-relative-name
+			temp-file
+			(file-name-directory buffer-file-name))))
+      (list "pyflakes" (list local-file))))
+
+  (add-to-list 'flymake-allowed-file-name-masks
+	       '("\\.py\\'" flymake-pyflakes-init)))
+
+(add-hook 'find-file-hook 'flymake-find-file-hook)
+;;(delete '("\\.html?\\'" flymake-xml-init) flymake-allowed-file-name-masks)
+(delete '("\\.java\\'" flymake-simple-make-java-init flymake-simple-java-cleanup) flymake-allowed-file-name-masks)
+
+(load-library "flymake-cursor")
+
+(autoload 'markdown-mode "markdown-mode.el"
+   "Major mode for editing Markdown files" t)
+(setq auto-mode-alist
+   (cons '("\\.md" . markdown-mode) auto-mode-alist))
+
+(setq frame-title-format
+      (list (format "%s %%S: %%j " (system-name))
+        '(buffer-file-name "%f" (dired-directory dired-directory "%b"))))
+
+(require 'tramp)
+(add-to-list 'tramp-default-user-alist
+	     '("ssh" "giessel\\.com" "giesselc"))
+(add-to-list 'tramp-default-user-alist '(nil nil "andrew") t)
+
+;; Set to the location of your Org files on your local system
+(setq org-directory "~/Dropbox/OrgStaging")
+;; Set to the name of the file where new notes will be stored
+(setq org-mobile-inbox-for-pull "~/Dropbox/OrgStaging/flagged.org")
+;; Set to <your Dropbox root directory>/MobileOrg.
+(setq org-mobile-directory "~/Dropbox/MobileOrg")
+
+;; add pylookup to your loadpath, ex) ~/.emacs.d/pylookup
+(setq pylookup-dir "~/.emacs.d/plugins/pylookup")
+(add-to-list 'load-path pylookup-dir)
+
+;; load pylookup when compile time
+(eval-when-compile (require 'pylookup))
+
+;; set executable file and db file
+(setq pylookup-program (concat pylookup-dir "/pylookup.py"))
+(setq pylookup-db-file (concat pylookup-dir "/pylookup.db"))
+
+;; set search option if you want
+;; (setq pylookup-search-options '("--insensitive" "0" "--desc" "0"))
+
+;; to speedup, just load it on demand
+(autoload 'pylookup-lookup "pylookup"
+  "Lookup SEARCH-TERM in the Python HTML indexes." t)
+
+(autoload 'pylookup-update "pylookup" 
+  "Run pylookup-update and create the database at `pylookup-db-file'." t)
+
+(global-set-key "\C-c h" 'pylookup-lookup)
+(global-set-key "\C-c j" 'find-tag)
+
