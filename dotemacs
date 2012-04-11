@@ -167,3 +167,5 @@
 (global-set-key "\C-c h" 'pylookup-lookup)
 (global-set-key "\C-c j" 'find-tag)
 
+(require 'magit)
+
