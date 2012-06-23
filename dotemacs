@@ -16,6 +16,7 @@
 (add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/") t)
 (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/") t)
 (add-to-list 'load-path (expand-file-name "~/.emacs.d/plugins"))
+(package-initialize)
 
 (load-theme 'wombat t)
 
@@ -23,7 +24,9 @@
 (blink-cursor-mode t)
 (menu-bar-mode 1)
 (column-number-mode 1)
-(tool-bar-mode 0)
+(if window-system
+   (tool-bar-mode 0)
+)
 (menu-bar-mode 0)
 
 (global-linum-mode)
