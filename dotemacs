@@ -2,8 +2,8 @@
 (setq initial-major-mode
       (lambda ()
         (text-mode)
-        (font-lock-mode)
-        ))
+        )
+      )
 
 (setq inhibit-startup-message t)
 
@@ -11,47 +11,31 @@
 
 (setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
 
-;;(add-hook 'before-save-hook (lambda () (delete-trailing-whitespace)))
 
-(add-to-list 'load-path
-             "~/.emacs.d/plugins")
-(add-to-list 'load-path
-             "~/.emacs.d/plugins/color-theme-6.6.0")
+(require 'package)
+(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/") t)
+(add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/") t)
+(add-to-list 'load-path (expand-file-name "~/.emacs.d/plugins"))
 
-(when window-system 
-   (require 'color-theme)
-   (eval-after-load "color-theme"
-     '(progn
-	(color-theme-initialize)
-;;	(load-file (expand-file-name "~/.emacs.d/plugins/color-theme-almost-monokai.el"))
-;;	(load-file (expand-file-name "~/.emacs.d/plugins/color-theme-solarized/color-theme-solarized.el"))
-	(color-theme-almost-monokai)
-;;	(color-theme-solarized-light)
-	)
-     )
-   
-   (tool-bar-mode 0)
-   (scroll-bar-mode -1)
-   (linum-mode 1)
-
-   )
-
-(load-file (expand-file-name "~/.emacs.d/plugins/package.el"))
-
-
-;; By default turn on colorization.
-(if (fboundp 'global-font-lock-mode)
-    (global-font-lock-mode t)
-  )
+(load-theme 'wombat t)
 
 ;; kill alot of annoying things
-(blink-cursor-mode 1)
-(menu-bar-mode 0)
+(blink-cursor-mode t)
+(menu-bar-mode 1)
 (column-number-mode 1)
+(tool-bar-mode 0)
+(menu-bar-mode 0)
+
+(global-linum-mode)
+;; Offset the number by two spaces to work around some weird fringe glitch
+(setq linum-format "  %d ")
 
 ;; change scroll behavior to "progressive" instead of "jerky"
 (setq-default scroll-up-aggressively 0.0 scroll-down-aggressively 0.0)
 (setq scroll-step 1 scroll-conservatively 100000)
+
+(require 'expand-region)
+(global-set-key (kbd "C-=") 'er/expand-region)
 
 ;; enable numbered(if window-system backups & move them all ~/.emacsbackup
 (setq version-control t)
@@ -61,13 +45,6 @@
 
 (require 'ido)
 (ido-mode)
-
-;; (require 'org-install)
-;; (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
-;; (define-key global-map "\C-cl" 'org-store-link)
-;; (define-key global-map "\C-ca" 'org-agenda)
-;; (setq org-log-done t)
-
 
 (global-set-key
  "\M-x"
@@ -93,8 +70,10 @@
 	       '("\\.py\\'" flymake-pyflakes-init)))
 
 (add-hook 'find-file-hook 'flymake-find-file-hook)
-;;(delete '("\\.html?\\'" flymake-xml-init) flymake-allowed-file-name-masks)
-(delete '("\\.java\\'" flymake-simple-make-java-init flymake-simple-java-cleanup) flymake-allowed-file-name-masks)
+(delete '("\\.html?\\'" flymake-xml-init) 
+	flymake-allowed-file-name-masks)
+(delete '("\\.java\\'" flymake-simple-make-java-init flymake-simple-java-cleanup) 
+	flymake-allowed-file-name-masks)
 
 (load-library "flymake-cursor")
 
@@ -114,35 +93,10 @@
 ;; Set to <your Dropbox root directory>/MobileOrg.
 (setq org-mobile-directory "~/Dropbox/MobileOrg")
 
-;; add pylookup to your loadpath, ex) ~/.emacs.d/pylookup
-(setq pylookup-dir "~/.emacs.d/plugins/pylookup")
-(add-to-list 'load-path pylookup-dir)
-
-;; load pylookup when compile time
-(eval-when-compile (require 'pylookup))
-
-;; set executable file and db file
-(setq pylookup-program (concat pylookup-dir "/pylookup.py"))
-(setq pylookup-db-file (concat pylookup-dir "/pylookup.db"))
-
-;; set search option if you want
-;; (setq pylookup-search-options '("--insensitive" "0" "--desc" "0"))
-
-;; to speedup, just load it on demand
-(autoload 'pylookup-lookup "pylookup"
-  "Lookup SEARCH-TERM in the Python HTML indexes." t)
-
-(autoload 'pylookup-update "pylookup" 
-  "Run pylookup-update and create the database at `pylookup-db-file'." t)
-
-(global-set-key "\C-c h" 'pylookup-lookup)
-(global-set-key "\C-c j" 'find-tag)
-
-(require 'magit)
+;;(require 'magit)
 
 (global-set-key "\C-x\C-m" 'execute-extended-command)
 (global-set-key "\C-c\C-m" 'execute-extended-command)
-
 
 (add-to-list 'load-path "/opt/local/share/emacs/site-lisp/slime")
 (setq slime-lisp-implementations
@@ -155,3 +109,17 @@
 
 (setq inferior-lisp-program "sbcl")
 (load (expand-file-name "~/quicklisp/slime-helper.el"))
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(ansi-color-names-vector ["#3f3f3f" "#cc9393" "#7f9f7f" "#f0dfaf" "#8cd0d3" "#dc8cc3" "#93e0e3" "#dcdccc"])
+ '(custom-safe-themes (quote ("71b172ea4aad108801421cc5251edb6c792f3adbaecfa1c52e94e3d99634dee7" default)))
+ '(fci-rule-color "#383838"))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
