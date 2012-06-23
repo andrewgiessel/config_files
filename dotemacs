@@ -23,10 +23,10 @@
    (eval-after-load "color-theme"
      '(progn
 	(color-theme-initialize)
-	(load-file "~/.emacs.d/plugins/color-theme-almost-monokai.el")
-	(load-file "~/.emacs.d/plugins/color-theme-solarized/color-theme-solarized.el")
+;;	(load-file (expand-file-name "~/.emacs.d/plugins/color-theme-almost-monokai.el"))
+;;	(load-file (expand-file-name "~/.emacs.d/plugins/color-theme-solarized/color-theme-solarized.el"))
 	(color-theme-almost-monokai)
-	;(color-theme-solarized-light)
+;;	(color-theme-solarized-light)
 	)
      )
    
@@ -35,6 +35,9 @@
    (linum-mode 1)
 
    )
+
+(load-file (expand-file-name "~/.emacs.d/plugins/package.el"))
+
 
 ;; By default turn on colorization.
 (if (fboundp 'global-font-lock-mode)
@@ -55,35 +58,6 @@
 (setq backup-directory-alist (list (cons ".*" (expand-file-name "~/.emacsbackup/"))))
 
 (global-set-key "\C-xf" 'fill-paragraph)
-
-;; ;; (add-to-list 'load-path
-;; ;; 	     "~/.emacs.d/plugins/yasnippet-0.6.1c")
-;; ;;     (require 'yasnippet) ;; not yasnippet-bundle
-;; ;;     (yas/initialize)
-;; ;;     (yas/load-directory "~/.emacs.d/plugins/yasnippet-0.6.1c/snippets")
-
-;; ;; pymacs
-;; ;; (autoload 'pymacs-apply "pymacs")
-;; ;; (autoload 'pymacs-call "pymacs")
-;; ;; (autoload 'pymacs-eval "pymacs" nil t)
-;; ;; (autoload 'pymacs-exec "pymacs" nil t)
-;; ;; (autoload 'pymacs-load "pymacs" nil t)
-
-;; ;; ;;(eval-after-load "pymacs"
-;; ;; ;;  '(add-to-list 'pymacs-load-path YOUR-PYMACS-DIRECTORY"))
-
-;; ;; ;; rope (requires pymacs)
-;; ;; ;;(pymacs-load "ropemacs" "rope-")
-;; ;; ;;(pymacs-load "ropemacs")
-
-;; ;; (custom-set-variables
-;; ;;   ;; custom-set-variables was added by Custom -- don't edit or cut/paste it!
-;; ;;   ;; Your init file should contain only one such instance.
-;; ;;  '(ecb-options-version "2.32"))
-;; ;; (custom-set-faces
-;; ;;   ;; custom-set-faces was added by Custom -- don't edit or cut/paste it!
-;; ;;   ;; Your init file should contain only one such instance.
-;; ;;  )
 
 (require 'ido)
 (ido-mode)
@@ -133,11 +107,6 @@
       (list (format "%s %%S: %%j " (system-name))
         '(buffer-file-name "%f" (dired-directory dired-directory "%b"))))
 
-(require 'tramp)
-(add-to-list 'tramp-default-user-alist
-	     '("ssh" "giessel\\.com" "giesselc"))
-(add-to-list 'tramp-default-user-alist '(nil nil "andrew") t)
-
 ;; Set to the location of your Org files on your local system
 (setq org-directory "~/Dropbox/OrgStaging")
 ;; Set to the name of the file where new notes will be stored
@@ -171,3 +140,18 @@
 
 (require 'magit)
 
+(global-set-key "\C-x\C-m" 'execute-extended-command)
+(global-set-key "\C-c\C-m" 'execute-extended-command)
+
+
+(add-to-list 'load-path "/opt/local/share/emacs/site-lisp/slime")
+(setq slime-lisp-implementations
+     `((sbcl ("/opt/local/bin/sbcl"))
+       (abcl ("/opt/local/bin/abcl"))
+       (clisp ("/opt/local/bin/clisp"))))
+
+(require 'slime)
+(slime-setup  '(slime-repl slime-asdf slime-fancy slime-banner))
+
+(setq inferior-lisp-program "sbcl")
+(load (expand-file-name "~/quicklisp/slime-helper.el"))
