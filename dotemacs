@@ -1,4 +1,8 @@
-;; By default we starting in text mode.
+;; Emacs initialization file by Andrew Giessel
+;; email:  andrew.giessel@gmail.com
+;; Optimized for OS X
+
+;; By default we start a new buffer in text mode.
 (setq initial-major-mode
       (lambda ()
         (text-mode)
