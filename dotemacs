@@ -12,6 +12,7 @@
 (setq inhibit-startup-message t)
 
 (setq transient-mark-mode t)
+(pending-delete-mode t)
 
 (setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
 
@@ -44,6 +45,7 @@
 
 (require 'expand-region)
 (global-set-key (kbd "C-=") 'er/expand-region)
+(global-set-key (kbd "C-+") 'mark-defun)
 
 ;; enable numbered(if window-system backups & move them all ~/.emacsbackup
 (setq version-control t)
