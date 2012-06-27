@@ -1,3 +1,5 @@
+
+
 ;; Emacs initialization file by Andrew Giessel
 ;; email:  andrew.giessel@gmail.com
 ;; Optimized for OS X
@@ -108,14 +110,17 @@
 (global-set-key "\C-x\C-m" 'execute-extended-command)
 (global-set-key "\C-c\C-m" 'execute-extended-command)
 
-(add-to-list 'load-path "/opt/local/share/emacs/site-lisp/slime")
-(setq slime-lisp-implementations
-     `((sbcl ("/opt/local/bin/sbcl"))
-       (abcl ("/opt/local/bin/abcl"))
-       (clisp ("/opt/local/bin/clisp"))))
-
 (require 'slime)
 (slime-setup  '(slime-repl slime-asdf slime-fancy slime-banner))
+
+
+(add-hook 'slime-repl-mode-hook
+          (defun clojure-mode-slime-font-lock ()
+            (require 'clojure-mode)
+            (let (font-lock-mode)
+              (clojure-mode-font-lock-setup))))
+
+
 
 (setq inferior-lisp-program "sbcl")
 (load (expand-file-name "~/quicklisp/slime-helper.el"))
