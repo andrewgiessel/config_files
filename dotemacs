@@ -1,15 +1,21 @@
+;; Emacs init file
+;; andrew.giessel@gmail.com
+;; optimized for working with a remote emacs process
 
+;; By default we start a new buffer in markdown mode.
 
-;; Emacs initialization file by Andrew Giessel
-;; email:  andrew.giessel@gmail.com
-;; Optimized for OS X
+(autoload 'markdown-mode "markdown-mode.el"
+   "Major mode for editing Markdown files" t)
+(setq auto-mode-alist
+   (cons '("\\.md" . markdown-mode) auto-mode-alist))
 
-;; By default we start a new buffer in text mode.
 (setq initial-major-mode
       (lambda ()
-        (text-mode)
+        (markdown-mode)
         )
       )
+
+(setq initial-scratch-message nil)
 
 (setq inhibit-startup-message t)
 
@@ -18,13 +24,12 @@
 
 (setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
 
-
 (require 'package)
-(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/") t)
-(add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/") t)
+(setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
+			 ("marmalade" . "http://marmalade-repo.org/packages/")
+			 ("melpa" . "http://melpa.org/packages/")))
 (add-to-list 'load-path (expand-file-name "~/.emacs.d/plugins"))
 (package-initialize)
-
 
 ;; set up the default theme and visual quirks
 (load-theme 'wombat t)
@@ -38,23 +43,13 @@
 (menu-bar-mode 0)
 
 (global-linum-mode)
-;; Offset the number by two spaces to work around some weird fringe glitch
 (setq linum-format "  %d ")
 
 ;; change scroll behavior to "progressive" instead of "jerky"
 (setq-default scroll-up-aggressively 0.0 scroll-down-aggressively 0.0)
 (setq scroll-step 1 scroll-conservatively 100000)
 
-(require 'expand-region)
-(global-set-key (kbd "C-=") 'er/expand-region)
-(global-set-key (kbd "C-+") 'mark-defun)
-
-;; enable numbered(if window-system backups & move them all ~/.emacsbackup
-(setq version-control t)
-(setq backup-directory-alist (list (cons ".*" (expand-file-name "~/.emacsbackup/"))))
-
-(global-set-key "\C-xf" 'fill-paragraph)
-
+;; ido for most stuff including the minibuffer
 (require 'ido)
 (ido-mode)
 
@@ -68,73 +63,31 @@
       "M-x "
       (all-completions "" obarray 'commandp))))))
 
+;; magit key binding
+(global-set-key (kbd "C-x g") 'magit-status)
 
-(when (load "flymake" t)
-  (defun flymake-pyflakes-init ()
-    (let* ((temp-file (flymake-init-create-temp-buffer-copy
-		       'flymake-create-temp-inplace))
-	   (local-file (file-relative-name
-			temp-file
-			(file-name-directory buffer-file-name))))
-      (list "pyflakes" (list local-file))))
+;; mouse stuff
+(xterm-mouse-mode)
+(defvar alternating-scroll-down-next t)
+(defvar alternating-scroll-up-next t)
 
-  (add-to-list 'flymake-allowed-file-name-masks
-	       '("\\.py\\'" flymake-pyflakes-init)))
+(defun alternating-scroll-down-line ()
+  (interactive "@")
+  (when alternating-scroll-down-next
+					;      (run-hook-with-args 'window-scroll-functions )
+    (scroll-down-line 5))
+  (setq alternating-scroll-down-next (not alternating-scroll-down-next)))
 
-(add-hook 'find-file-hook 'flymake-find-file-hook)
-(delete '("\\.html?\\'" flymake-xml-init) 
-	flymake-allowed-file-name-masks)
-(delete '("\\.java\\'" flymake-simple-make-java-init flymake-simple-java-cleanup) 
-	flymake-allowed-file-name-masks)
+(defun alternating-scroll-up-line ()
+  (interactive "@")
+  (when alternating-scroll-up-next
+					;      (run-hook-with-args 'window-scroll-functions)
+    (scroll-up-line 5))
+  (setq alternating-scroll-up-next (not alternating-scroll-up-next)))
 
-(load-library "flymake-cursor")
+(global-set-key (kbd "<mouse-4>") 'alternating-scroll-down-line)
+(global-set-key (kbd "<mouse-5>") 'alternating-scroll-up-line)
 
-(autoload 'markdown-mode "markdown-mode.el"
-   "Major mode for editing Markdown files" t)
-(setq auto-mode-alist
-   (cons '("\\.md" . markdown-mode) auto-mode-alist))
-
-(setq frame-title-format
-      (list (format "%s %%S: %%j " (system-name))
-        '(buffer-file-name "%f" (dired-directory dired-directory "%b"))))
-
-;; Set to the location of your Org files on your local system
-(setq org-directory "~/Dropbox/OrgStaging")
-;; Set to the name of the file where new notes will be stored
-(setq org-mobile-inbox-for-pull "~/Dropbox/OrgStaging/flagged.org")
-;; Set to <your Dropbox root directory>/MobileOrg.
-(setq org-mobile-directory "~/Dropbox/MobileOrg")
-
-(require 'magit)
-
-(global-set-key "\C-x\C-m" 'execute-extended-command)
-(global-set-key "\C-c\C-m" 'execute-extended-command)
-
-(require 'slime)
-(slime-setup  '(slime-repl slime-asdf slime-fancy slime-banner))
-
-
-(add-hook 'slime-repl-mode-hook
-          (defun clojure-mode-slime-font-lock ()
-            (require 'clojure-mode)
-            (let (font-lock-mode)
-              (clojure-mode-font-lock-setup))))
-
-
-
-(setq inferior-lisp-program "sbcl")
-(load (expand-file-name "~/quicklisp/slime-helper.el"))
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(ansi-color-names-vector ["#3f3f3f" "#cc9393" "#7f9f7f" "#f0dfaf" "#8cd0d3" "#dc8cc3" "#93e0e3" "#dcdccc"])
- '(custom-safe-themes (quote ("71b172ea4aad108801421cc5251edb6c792f3adbaecfa1c52e94e3d99634dee7" default)))
- '(fci-rule-color "#383838"))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
+(defun track-mouse (e))
+(setq mouse-sel-mode t)
+(setq mouse-wheel-follow-mouse 't)
