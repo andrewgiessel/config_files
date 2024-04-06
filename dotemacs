@@ -1,93 +1,44 @@
-;; Emacs init file
-;; andrew.giessel@gmail.com
-;; optimized for working with a remote emacs process
-
-;; By default we start a new buffer in markdown mode.
-
-(autoload 'markdown-mode "markdown-mode.el"
-   "Major mode for editing Markdown files" t)
-(setq auto-mode-alist
-   (cons '("\\.md" . markdown-mode) auto-mode-alist))
-
-(setq initial-major-mode
-      (lambda ()
-        (markdown-mode)
-        )
-      )
-
-(setq initial-scratch-message nil)
-
-(setq inhibit-startup-message t)
-
-(setq transient-mark-mode t)
-(pending-delete-mode t)
-
-(setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
-
-(require 'package)
-(setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
-			 ("marmalade" . "http://marmalade-repo.org/packages/")
-			 ("melpa" . "http://melpa.org/packages/")))
-(add-to-list 'load-path (expand-file-name "~/.emacs.d/plugins"))
-(package-initialize)
-
-;; set up the default theme and visual quirks
-(load-theme 'wombat t)
-
-(blink-cursor-mode t)
-(menu-bar-mode 1)
-(column-number-mode 1)
-(if window-system
-   (tool-bar-mode 0)
-)
+(load-theme 'wombat)
+(global-linum-mode 1)
+(setq linum-format "%3d \u2502 ")
 (menu-bar-mode 0)
+(tool-bar-mode 0)
+(setq inhibit-startup-screen t)
 
-(global-linum-mode)
-(setq linum-format "  %d ")
+(setq initial-major-mode 'org-mode)
 
-;; change scroll behavior to "progressive" instead of "jerky"
-(setq-default scroll-up-aggressively 0.0 scroll-down-aggressively 0.0)
-(setq scroll-step 1 scroll-conservatively 100000)
 
-;; ido for most stuff including the minibuffer
-(require 'ido)
-(ido-mode)
+(require 'org)
+(org-babel-load-file
+ (expand-file-name "~/init.org"))
 
-(global-set-key
- "\M-x"
- (lambda ()
-   (interactive)
-   (call-interactively
-    (intern
-     (ido-completing-read
-      "M-x "
-      (all-completions "" obarray 'commandp))))))
+(set-face-attribute 'default nil
+                    :family "JetBrainsMono Nerd Font"
+                    :height 140
+                    :weight 'normal
+                    :width 'normal)
 
-;; magit key binding
-(global-set-key (kbd "C-x g") 'magit-status)
-
-;; mouse stuff
-(xterm-mouse-mode)
-(defvar alternating-scroll-down-next t)
-(defvar alternating-scroll-up-next t)
-
-(defun alternating-scroll-down-line ()
-  (interactive "@")
-  (when alternating-scroll-down-next
-					;      (run-hook-with-args 'window-scroll-functions )
-    (scroll-down-line 5))
-  (setq alternating-scroll-down-next (not alternating-scroll-down-next)))
-
-(defun alternating-scroll-up-line ()
-  (interactive "@")
-  (when alternating-scroll-up-next
-					;      (run-hook-with-args 'window-scroll-functions)
-    (scroll-up-line 5))
-  (setq alternating-scroll-up-next (not alternating-scroll-up-next)))
-
-(global-set-key (kbd "<mouse-4>") 'alternating-scroll-down-line)
-(global-set-key (kbd "<mouse-5>") 'alternating-scroll-up-line)
-
-(defun track-mouse (e))
-(setq mouse-sel-mode t)
-(setq mouse-wheel-follow-mouse 't)
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   '(exec-path-from-shell crux use-package markdown-mode doom-themes)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(default ((t (:family "JetBrainsMono Nerd Font" :foundry "nil" :slant normal :weight normal :height 141 :width normal))))
+ '(org-document-title ((t (:weight bold :font "JetBrainsMono Nerd Font" :height 1.5 :underline nil))))
+ '(org-level-1 ((t (:inherit outline-1 :weight bold :font "JetBrainsMono Nerd Font" :height 1.75))))
+ '(org-level-2 ((t (:inherit outline-2 :weight bold :font "JetBrainsMono Nerd Font" :height 1.5))))
+ '(org-level-3 ((t (:inherit outline-3 :weight bold :font "JetBrainsMono Nerd Font" :height 1.25))))
+ '(org-level-4 ((t (:inherit outline-4 :weight bold :font "JetBrainsMono Nerd Font" :height 1.1))))
+ '(org-level-5 ((t (:inherit outline-5 :weight bold :font "JetBrainsMono Nerd Font"))))
+ '(org-level-6 ((t (:inherit outline-6 :weight bold :font "JetBrainsMono Nerd Font"))))
+ '(org-level-7 ((t (:inherit outline-7 :weight bold :font "JetBrainsMono Nerd Font"))))
+ '(org-level-8 ((t (:inherit outline-8 :weight bold :font "JetBrainsMono Nerd Font"))))
+ '(spaceline-highlight-face ((t (:background "#CAE982" :foreground "#3E3D31" :inherit 'mode-line))))
+ '(variable-pitch ((t (:family "EtBembo")))))

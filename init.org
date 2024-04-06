@@ -1,0 +1,596 @@
+* Preamble
+  #+BEGIN_SRC emacs-lisp
+    ;;; -*- mode: emacs-lisp -*-
+    ;;; giessel-init --- Summary
+    ;;; Commentary:
+    ;; Emacs init file
+    ;; andrew.giessel@gmail.com
+
+    ;;; Code:
+
+    ;;; Package configuration
+    (require 'package)
+    (add-to-list 'package-archives
+		 '("melpa" . "http://melpa.org/packages/") t)
+    (add-to-list 'load-path (expand-file-name "~/.emacs.d/local"))
+    (unless (package-installed-p 'use-package)
+      (progn
+	(package-refresh-contents)
+	(package-install 'use-package)))
+
+    (require 'use-package-ensure)
+    (setq use-package-always-ensure t)
+
+    (setenv "SHELL" "/bin/zsh")
+    (use-package exec-path-from-shell)
+    (exec-path-from-shell-initialize)
+    (setq default-directory (concat (getenv "HOME") "/"))
+
+  #+END_SRC
+* Theme and visual quirks
+  #+BEGIN_SRC emacs-lisp
+	    ;; By default we start in a blank org-mode buffer and keep everything
+	    ;; very clean
+	    (setq initial-major-mode 'org-mode
+		  initial-scratch-message nil
+		  inhibit-startup-message t
+		  show-trailing-whitespace t)
+	    (setq backup-directory-alist
+		  `((".*" . ,temporary-file-directory)))
+	    (setq auto-save-file-name-transforms
+		  `((".*" ,temporary-file-directory t)))
+
+	    (use-package doom-themes
+	      :ensure t
+	      :config
+	      ;; Global settings (defaults)
+	      (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
+		    doom-themes-enable-italic t) ; if nil, italics is universally disabled
+            (load-theme 'doom-Iosvkem t)
+	      (doom-themes-visual-bell-config))
+
+	    ;; enable minor modes
+	    (global-hl-line-mode t)
+	    (transient-mark-mode t)
+	    (column-number-mode t)
+	    (pending-delete-mode t)
+	    (global-display-line-numbers-mode t)
+	    (tool-bar-mode 0)
+	    (menu-bar-mode 0)
+	    (global-prettify-symbols-mode t)
+
+	    (display-time-mode t)
+	    (setq display-time-day-and-date t
+		  display-time-24hr-format t)
+
+	    (setq explicit-shell-file-name (getenv "/bin/zsh"))
+            #+END_SRC
+* Keybinds and aliases
+  #+BEGIN_SRC emacs-lisp
+    (defalias 'yes-or-no-p 'y-or-n-p)
+    (global-set-key [f5] 'recompile)
+    (global-set-key (kbd "M-/") 'company-complete)
+
+    (global-set-key (kbd "M-<f1>") 'helm-bookmarks) ;; this rules
+    (global-set-key (kbd "s-1") 'helm-bookmarks)
+
+    (global-set-key (kbd "M-<f2>") 'org-capture)
+    (global-set-key (kbd "s-2") 'org-capture)
+
+    (global-set-key (kbd "M-<f3>") 'vterm)
+    (global-set-key (kbd "s-3") 'vterm)
+
+    (global-set-key (kbd "<S-return>") 'pp-eval-last-sexp)
+    ;;    (global-set-key (kbd "<s-return>") 'eval-)
+
+    (global-set-key (kbd "<S-down-mouse-1>") 'mouse-save-then-kill)
+    (global-set-key (kbd "<mouse-3>") 'mouse3-popup-menu)
+
+    (defun scratch-pop ()
+      (interactive)
+      (if (equal (buffer-name) "*scratch*")
+          (switch-to-buffer (other-buffer))
+        (switch-to-buffer "*scratch*")))
+    (global-set-key (kbd "<s-escape>") 'scratch-pop)
+
+  #+END_SRC
+
+* Hooks
+  #+BEGIN_SRC emacs-lisp
+    (add-hook 'vterm-mode-hook (lambda ()
+                                 (setq show-trailing-whitespace nil)))
+
+    (add-hook 'dashboard-mode-hook (lambda ()
+                                     (setq show-trailing-whitespace nil)))
+
+    (add-hook 'before-save-hook 'delete-trailing-whitespace)
+
+    (add-hook 'find-file-hook
+              (lambda ()
+                (when (file-remote-p default-directory)
+                  (setq-local projectile-mode-line "Projectile"))))
+
+  #+END_SRC
+* Mac stuff
+  #+BEGIN_SRC emacs-lisp
+    ;; this includes some mac specific keybindings
+    (when (string= system-type "darwin")
+      (if (file-exists-p (expand-file-name "~/.emacs.d/local/mac.el"))
+          (load "mac")))
+  #+END_SRC
+* Third-Party packages
+** Custom/local Packages
+   #+BEGIN_SRC emacs-lisp
+     (use-package hideshowvis
+       :load-path "~/.emacs.d/local"
+       :config
+       (hideshowvis-symbols))
+
+     (use-package more-math
+       :load-path "~/.emacs.d/local")
+
+     (use-package writing-mode
+       :load-path "~/.emacs.d/local")
+
+     (use-package latex-pretty-symbols
+       :load-path "~/.emacs.d/local")
+
+     (use-package oblique-strategies
+       :load-path "~/.emacs.d/local")
+
+     (use-package tdd
+       :load-path "~/.emacs.d/local")
+
+     (use-package mouse3
+       :load-path "~/.emacs.d/local")
+
+     (use-package splitter
+       :load-path "~/.emacs.d/local")
+
+#+END_SRC
+** elisp packages
+These have already been included via other packages (or are built-in),
+but I thought it prudent to document them here.  I will try to use
+them more!
+
+- [[https://github.com/magnars/dash.el][dash.el]]
+- [[https://github.com/Wilfred/ht.el][ht.el]]
+- [[https://github.com/magnars/s.el][s.el]]
+- [[http://francismurillo.github.io/2017-03-30-Exploring-Emacs-rx-Macro/][rx]] - a macro for writing regular expressions
+
+** File Major Modes
+   #+BEGIN_SRC emacs-lisp
+     (use-package dockerfile-mode
+       :defer 2)
+     (use-package markdown-mode
+       :defer 2
+       :ensure t
+       :commands (markdown-mode gfm-mode)
+       :mode (("README\\.md\\'" . gfm-mode)
+              ("\\.md\\'" . markdown-mode)
+              ("\\.markdown\\'" . markdown-mode))
+       :init (setq markdown-command "multimarkdown"))
+#+END_SRC
+
+** Terminal
+  #+BEGIN_SRC emacs-lisp
+     (use-package vterm
+       :ensure t
+       :bind (("C-x t" . vterm-term)))
+
+     (defun term-send-line-or-region ()
+       "Adapted from https://stackoverflow.com/questions/6286579/emacs-shell-mode-how-to-send-region-to-shell/62473405#62473405"
+       (interactive ())
+       (let ((proc (get-process "*ansi-term*"))
+             pbuf
+             min
+             max
+             command)
+         (unless proc
+           (let ((currbuff (current-buffer)))
+             (v-term)
+             (switch-to-buffer currbuff)
+             (setq proc (get-process "*ansi-term*"))))
+
+         (setq pbuff (process-buffer proc))
+
+         (if (use-region-p)
+             (setq min (region-beginning)
+                   max (region-end))
+               (setupfile: q min (point-at-bol)
+                             max (point-at-eol)))
+
+         (setq command (concat (buffer-substring min max) "\n"))
+         (process-send-string proc command)
+         (display-buffer (process-buffer proc) t)))
+
+     (defun sh-switch-to-process-buffer ()
+       (interactive)
+       (pop-to-buffer (process-buffer (get-process "*ansi-term*")) t))
+  #+END_SRC
+
+** UI
+   #+BEGIN_SRC emacs-lisp
+     (use-package unfill
+       :ensure t
+       :defer 2
+       :config
+       (global-set-key (kbd "M-q") 'unfill-toggle))
+
+     (use-package rainbow-blocks
+       :defer 2)
+
+     (use-package rainbow-delimiters)
+
+     (use-package unkillable-scratch
+       :defer 2
+       :config
+       (unkillable-scratch t)
+       (setq unkillable-scratch-do-not-reset-scratch-buffer t))
+
+     (use-package diminish)
+
+     (use-package centaur-tabs
+       :ensure t
+       :demand
+       :config
+       (when (string= system-type "darwin")
+         (centaur-tabs-mode t))
+       (centaur-tabs-group-by-projectile-project)
+       (setq centaur-tabs-set-icons t
+             centaur-tabs-gray-out-icons 'buffer
+             centaur-tabs-set-modified-marker t
+             centaur-tabs-set-bar 'over)
+       :bind
+       ("C-S-<tab>" . centaur-tabs-backward)
+       ("C-<tab>" . centaur-tabs-forward))
+
+     (defun centaur-tabs-buffer-groups ()
+       "`awesome-tab-buffer-groups' control buffers' group rules.
+
+                       Group awesome-tab with mode if buffer is derived from `eshell-mode' `emacs-lisp-mode' `dired-mode' `org-mode' `magit-mode'.
+                       All buffer name start with * will group to \"Emacs\".
+                       Other buffer group by `awesome-tab-get-group-name' with project name."
+       (list
+        (cond
+         ((derived-mode-p 'term-mode)
+          "Terminals")
+         ((or (string-equal "*" (substring (buffer-name) 0 1))
+              (memq major-mode '(magit-process-mode
+                                 magit-status-mode
+                                 magit-diff-mode
+                                 magit-log-mode
+                                 magit-file-mode
+                                 magit-blob-mode
+                                 magit-blame-mode
+                                 )))
+          "Emacs")
+         ((derived-mode-p 'eshell-mode)
+          "EShell")
+         ((derived-mode-p 'emacs-lisp-mode)
+          "Elisp")
+         ((derived-mode-p 'dired-mode)
+          "Dired")
+         ((memq major-mode '(org-mode org-agenda-mode diary-mode))
+          "OrgMode")
+         (t
+          (centaur-tabs-get-group-name (current-buffer))))))
+
+     (defun centaur-tabs-hide-tab (x)
+       (let ((name (format "%s" x)))
+         (or
+          (window-dedicated-p (selected-window))
+          (string-prefix-p "*epc" name)
+          (string-prefix-p "*helm" name)
+          (string-prefix-p "*Helm" name)
+          (string-prefix-p "*Messages*" name)
+          (string-prefix-p "*Compile-Log*" name)
+          (string-prefix-p "*which-key*" name)
+          (string-prefix-p "*lsp" name)
+          (string-prefix-p "magit" name))))
+
+     (use-package doom-modeline
+       :ensure t
+       :hook (after-init . doom-modeline-mode))
+
+     (use-package dashboard
+       :diminish dashboard-mode
+       :config
+       (require 'oblique-strategies)
+       (setq dashboard-banner-logo-title (oblique-strategies)
+             dashboard-footer (oblique-strategies)
+             dashboard-center-content t
+             dashboard-items '((recents  . 10)
+                               (bookmarks . 10)
+                               (projects . 10))
+             initial-buffer-choice (lambda () (if (> (length command-line-args) 1)
+                                                  (get-buffer (cadr command-line-args))
+                                                (get-buffer "*dashboard*")))
+             dashboard-set-heading-icons t
+             dashboard-set-file-icons t)
+       (dashboard-setup-startup-hook)
+       (require 'dashboard)
+
+       (defun update-dashboard-banner-logo-title ()
+         (setq dashboard-banner-logo-title (oblique-strategies)
+               dashboard-footer (oblique-strategies)))
+       (advice-add 'dashboard-refresh-buffer :before 'update-dashboard-banner-logo-title))
+
+     (use-package latex-pretty-symbols
+       :defer 2)
+
+     (use-package undo-tree
+       :defer 2
+       :config
+       (global-undo-tree-mode))
+
+     (use-package which-key
+       :defer 2
+       :diminish which-key-mode
+       :config
+       (which-key-mode))
+
+     (use-package helpful
+       :config
+       (global-set-key (kbd "C-h f") #'helpful-callable)
+       (global-set-key (kbd "C-h v") #'helpful-variable)
+       (global-set-key (kbd "C-h k") #'helpful-key))
+   #+END_SRC
+
+** IDE
+   #+BEGIN_SRC emacs-lisp
+     (use-package magit
+       :defer 5
+       :bind (("C-x g" . 'magit-status)
+              ("C-x C-g" . 'magit-status)))
+
+     (use-package projectile
+       :diminish projectile-mode
+       :defer 5
+       :config
+       (projectile-mode +1)
+       (setq projectile-mode-line "Projectile")
+       (setq projectile-project-search-path '("~/_repos/")))
+
+     (use-package company
+       :config
+       (setq company-idle-delay 0.3)
+       (global-company-mode 1))
+
+     ;; With use-package:
+     (use-package company-box
+       :hook (company-mode . company-box-mode))
+
+     (use-package lsp-mode
+       :defer 1
+       :commands lsp
+       :init
+       (setq lsp-prefer-flymake nil
+             lsp-auto-guess-root t
+             lsp-enable-snippet nil)
+       :config
+       (add-hook 'python-mode-hook #'lsp)
+
+       (lsp-register-client
+        (make-lsp-client :new-connection (lsp-tramp-connection "pyls")
+                         :major-modes '(python-mode)
+                         :remote? t
+                         :server-id 'pyls-remote)))
+
+
+     ;; lsp addons
+     (use-package lsp-ui
+       :requires lsp-mode flycheck
+       :config
+       (setq lsp-ui-doc-enable t
+             lsp-ui-doc-use-childframe t
+             lsp-ui-doc-position 'top
+             lsp-ui-doc-include-signature t
+             lsp-ui-sideline-enable nil
+             lsp-ui-flycheck-enable t
+             lsp-ui-flycheck-list-position 'right
+             lsp-ui-flycheck-live-reporting t
+             lsp-ui-peek-enable t
+             lsp-ui-peek-list-width 60
+             lsp-ui-peek-peek-height 25)
+
+       (add-hook 'lsp-mode-hook 'lsp-ui-mode))
+
+     (use-package lsp-treemacs
+       :ensure t)
+
+     (add-hook 'python-mode-hook 'hideshowvis-minor-mode)
+     (add-hook 'python-mode-hook 'projectile-mode)
+
+     (add-hook 'emacs-lisp-mode-hook 'hideshowvis-minor-mode)
+     (add-hook 'emacs-lisp-mode-hook 'projectile-mode)
+
+     (defun indent-or-complete ()
+       "Complete if point is at end of a word, otherwise indent line."
+       (interactive)
+       (if (looking-at "\\>")
+           (company-complete)
+         (indent-for-tab-command)))
+
+     (defun occur-definitions ()
+       "Display an occur buffer of all definitions in the current buffer.
+                                 Also, switch to that buffer.  Straight jacked from elpy, see:
+                                 https://github.com/jorgenschaefer/elpy/blob/master/elpy.el#L2490-L2503"
+       (interactive)
+       (let ((list-matching-lines-face nil))
+         (occur "^\s*\\(\\(async\s\\|\\)def\\|class\\)\s"))
+       (let ((window (get-buffer-window "*Occur*")))
+         (if window
+             (select-window window)
+           (switch-to-buffer "*Occur*"))))
+
+     (require 'python)
+     (add-to-list 'exec-path "/Users/agiessel/anaconda3/condabin")
+     (add-to-list 'exec-path "/Users/agiessel/anaconda3/bin")
+
+     (define-key python-mode-map (kbd "<tab>") 'indent-or-complete)
+     (define-key python-mode-map (kbd "C-c C-o") 'occur-definitions)
+
+   #+END_SRC
+
+** Helm
+   #+BEGIN_SRC emacs-lisp
+     (use-package helm-swoop
+       :defer 3)
+
+     (use-package helm-projectile
+       :defer 3
+       :config
+       (helm-projectile-on))
+
+     (use-package helm
+       :defer 3
+       :diminish ""
+       :init
+       (require 'projectile)
+       (require 'helm-projectile)
+       (helm-mode 1)
+       :bind   (("C-x C-f"  . helm-find-files)
+                ("C-x f"  .   helm-recentf)
+                ("C-x C-b"  . helm-buffers-list)
+                ("C-x b"    . helm-mini)
+                ("s-4"      . helm-mini)
+                ("M-x"      . helm-M-x)
+                ("M-y"      . helm-show-kill-ring)
+                ("C-s"      . helm-swoop)
+                ("M-t"      . helm-projectile)
+                ("M-r"      . helm-projectile-grep)
+                ("C-x r b"  . helm-bookmarks)
+                ([remap find-file]      . helm-find-files)
+                ([remap occur]          . helm-occur)
+                ([remap list-buffers]   . helm-buffers-list)
+                ([remap dabbrev-expand] . helm-dabbrev)
+                :map helm-map
+                ("<tab>" . helm-execute-persistent-action)
+                ("C-i"   . helm-execute-persistent-action)
+                ("C-z"   . helm-select-action))
+       :config
+       (setq helm-M-x-fuzzy-match t
+             helm-buffers-fuzzy-matching t
+             helm-recentf-fuzzy-match t
+             helm-split-window-inside-p t
+             helm-scroll-amount 8
+             helm-ff-file-name-history-use-recentf t
+             helm-echo-input-in-header-line t
+             helm-autoresize-max-height 0
+             helm-autoresize-min-height 30
+             helm-swoop-pre-input-function (lambda () ""))
+       (helm-adaptive-mode t)
+       (helm-autoresize-mode 1))
+
+     (use-package helm-flycheck
+       :defer 3
+       :bind-keymap
+       ("C-c ! h" . flycheck-mode-map))
+   #+END_SRC
+
+** Org mode
+   #+BEGIN_SRC emacs-lisp
+             (package-initialize)
+             (use-package org
+               :defer 5
+               :init
+        ;       (require 'org-bullets)
+               :config
+               (setq org-agenda-files '("~/Dropbox/org/")
+                     org-hide-emphasis-markers t
+                     org-startup-indented t
+                     org-support-shift-select t
+                     org-refile-targets '(("~/Dropbox/org/mtx/meetings/meetings.org" :level . 1)
+                                      ("~/Dropbox/org/mtx/meetings/one_on_ones.org" :level . 1)
+                                          ("~/Dropbox/org/tasks.org" :maxlevel . 9)
+                                          ("~/Dropbox/org/ideas.org" :level . 1))
+                     org-use-speed-commands t
+                     org-directory "~/org"
+                     org-mobile-inbox-for-pull "~/org/flagged.org"
+                     org-mobile-directory "~/Dropbox/Apps/MobileOrg"
+                     org-outline-path-complete-in-steps nil
+                     org-refile-use-outline-path t
+                 org-confirm-babel-evaluate nil)
+                 (add-hook 'org-mode-hook
+                  (lambda () (imenu-add-to-menubar "Imenu")))
+
+
+               (defvar org-capture-templates
+                 '(("n" "general note" entry (file "~/Dropbox/org/inbox.org") "** %? %U")
+                   ("m" "meeting"      entry (file "~/Dropbox/org/inbox.org") "** %? %U")
+                   ("t" "todo"         entry (file "~/Dropbox/org/inbox.org") "** TODO %? %U")))
+
+               (defun make-orgcapture-frame ()
+                 "Create a new frame and run org-capture."
+                 (interactive)
+                 (make-frame '((name . "remember") (width . 80) (height . 16)
+                               (top . 400) (left . 300)
+                               (font . "-apple-Monaco-medium-normal-normal-*-13-*-*-*-m-0-iso10646-1")
+                               ))
+                 (select-frame-by-name "remember")
+                 (org-capture))
+
+               (org-babel-do-load-languages
+                'org-babel-load-languages
+                '((emacs-lisp . t)
+                  (python . t)
+                  (racket . t)))
+
+               (font-lock-add-keywords 'org-mode
+                                       '(("^ *\\([-]+\\) "
+                                          (0 (prog1 () (compose-region
+                                                        (match-beginning 1)
+                                                        (match-end 1)
+                                                        "•"))))))
+
+               ;; (let* ((variable-tuple (cond ((x-list-fonts "Source Sans Pro") '(:font "Source Sans Pro"))
+               ;; 				    ((x-list-fonts "Lucida Grande")   '(:font "Lucida Grande"))
+               ;; 				    ((x-list-fonts "Verdana")         '(:font "Verdana"))
+               ;; 				    ((x-family-fonts "Sans Serif")    '(:family "Sans Serif"))
+               ;; 				    (nil (warn "Cannot find a Sans Serif Font.  Install Open Sans."))))
+               ;; 	      (headline             '(:weight bold)))
+
+                 ;; (custom-theme-set-faces 'user
+                 ;;                         `(org-level-8
+                 ;;                           ((t (:inherit outline-8 ,@headline ,@variable-tuple))))
+                 ;;                         `(org-level-7
+                 ;;                           ((t (:inherit outline-7 ,@headline ,@variable-tuple))))
+                 ;;                         `(org-level-6
+                 ;;                           ((t (:inherit outline-6 ,@headline ,@variable-tuple))))
+                 ;;                         `(org-level-5
+                 ;;                           ((t (:inherit outline-5 ,@headline ,@variable-tuple))))
+                 ;;                         `(org-level-4
+                 ;;                           ((t (:inherit outline-4 ,@headline ,@variable-tuple :height 1.1))))
+                 ;;                         `(org-level-3
+                 ;;                           ((t (:inherit outline-3 ,@headline ,@variable-tuple :height 1.25))))
+                 ;;                         `(org-level-2
+                 ;;                           ((t (:inherit outline-2 ,@headline ,@variable-tuple :height 1.5))))
+                 ;;                         `(org-level-1
+                 ;;                           ((t (:inherit outline-1 ,@headline ,@variable-tuple :height 1.75))))
+                 ;;                         `(org-document-title
+                 ;;                           ((t (,@headline ,@variable-tuple :height 1.5 :underline nil))))))
+
+               :bind (("s-2"   . org-capture)
+                      ("C-c c" . org-capture)
+                      (:map org-mode-map
+                            ("C-c ," . org-time-stamp-inactive)
+                            ;; unbind these for centaur tab switching
+                            ("C-<tab>" . nil)
+                            ("C-S-<tab>" . nil)
+                            ("C-<return>" . nil)
+                            ("C-S-<return>" . nil))))
+
+     (use-package org-superstar
+       :config
+       (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1))))
+
+     (use-package org-journal
+       :custom
+       (org-journal-dir "~/org/journal/"))
+
+     (use-package org-sidebar)
+
+     (use-package htmlize)
+
+#+END_SRC
